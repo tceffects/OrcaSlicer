@@ -1,0 +1,22 @@
+name: H3C Mac Intel build
+
+# Builds only the Intel (x86_64) macOS app on GitHub's Intel macOS runners.
+# Orca's build_all.yml builds x86_64 on the scarce arm64 runners and also
+# builds Windows and Linux, none of which this fork needs.
+# The finished app is uploaded as OrcaSlicer_Mac_bundle_x86_64_<sha>.
+
+on:
+  push:
+    branches:
+      - h3c
+  workflow_dispatch:
+
+jobs:
+  build_macos_x86_64:
+    uses: ./.github/workflows/build_check_cache.yml
+    with:
+      os: macos-15-intel
+      arch: x86_64
+      build-deps-only: false
+      force-build: false
+    secrets: inherit
