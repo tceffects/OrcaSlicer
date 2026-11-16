@@ -170,6 +170,14 @@ jobs:
             brew install libtool
             brew list
           fi
+          # Fork-only: on Intel runners Homebrew lives in /usr/local, which the
+          # compiler and linker search by default, so its png.h and OpenSSL
+          # headers shadow the deps (unprefixed png_* link errors). Hide them.
+          if [ -z "${{ vars.SELF_HOSTED }}" ] && [ "$(uname -m)" = "x86_64" ]; then
+            for d in include lib; do
+              if [ -d "/usr/local/$d" ]; then sudo mv "/usr/local/$d" "/usr/local/$d.homebrew-hidden"; fi
+            done
+          fi
           mkdir -p ${{ github.workspace }}/deps/build/${{ inputs.arch }}
 
       - name: Free disk space
