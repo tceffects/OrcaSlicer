@@ -1,8 +1,12 @@
 name: H3C Mac Intel build
 
-# Builds only the Intel (x86_64) macOS app on GitHub's Intel macOS runners.
-# Orca's build_all.yml builds x86_64 on the scarce arm64 runners and also
-# builds Windows and Linux, none of which this fork needs.
+# Builds only the Intel (x86_64) macOS app, cross-compiled on an Apple Silicon
+# runner the same way Orca's build_all.yml does it, without the Windows and
+# Linux builds this fork does not need.
+# Do not switch to macos-15-intel: Homebrew lives in /usr/local there, which is
+# on the compiler's default search path, so its png.h and OpenSSL headers
+# shadow the ones Orca builds (unprefixed png_* link errors, curl compiled
+# against the wrong OpenSSL). On Apple Silicon Homebrew is in /opt/homebrew.
 # The finished app is uploaded as OrcaSlicer_Mac_bundle_x86_64_<sha>.
 
 on:
@@ -15,7 +19,7 @@ jobs:
   build_macos_x86_64:
     uses: ./.github/workflows/build_check_cache.yml
     with:
-      os: macos-15-intel
+      os: macos-15
       arch: x86_64
       build-deps-only: false
       force-build: false
