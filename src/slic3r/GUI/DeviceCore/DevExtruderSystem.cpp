@@ -293,6 +293,18 @@ namespace Slic3r
     void ExtderSystemParser::ParseV2_0(const nlohmann::json& extruder_json, DevExtderSystem* system)
     {
         system->m_total_extder_count = DevUtil::get_flag_bits(extruder_json["state"].get<int>(), 0, 4);
+        // From Bambu Studio (b5ec4bb1c3, dcf44eb09b): at most 2 extruders, and
+        // the H3C (N10) firmware over-reports the count, so more than 2 virtual
+        // trays means one extruder. Bambu marks it "to be removed if firmware fixed".
+        if (system->m_total_extder_count > 2)
+        {
+            system->m_total_extder_count = 2;
+        }
+        if (system->Owner()->vt_slot.size() > 2)
+        {
+            system->m_total_extder_count = 1;
+        }
+
         if (system->m_current_extder_id != DevUtil::get_flag_bits(extruder_json["state"].get<int>(), 4, 4))
         {
             system->Owner()->targ_nozzle_id_from_pc = INVALID_EXTRUDER_ID;
@@ -351,7 +363,12 @@ namespace Slic3r
 
             //current nozzle info
             extder_obj.m_current_nozzle_id = njon["hnow"].get<int>();
-            system->m_extders.push_back(extder_obj);
+
+            // Keep m_extders in step with m_total_extder_count; callers assume they match.
+            if (static_cast<int>(system->m_extders.size()) < system->m_total_extder_count)
+            {
+                system->m_extders.push_back(extder_obj);
+            }
         }
     }
 }
